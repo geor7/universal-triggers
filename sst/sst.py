@@ -20,6 +20,7 @@ from allennlp.data.token_indexers import SingleIdTokenIndexer
 sys.path.append('..')
 import utils
 import attacks
+import os
 
 # Simple LSTM classifier that uses the final hidden state to classify Sentiment. Based on AllenNLP
 class LstmClassifier(Model):
@@ -55,10 +56,12 @@ def main():
     reader = StanfordSentimentTreeBankDatasetReader(granularity="2-class",
                                                     token_indexers={"tokens": single_id_indexer},
                                                     use_subtrees=True)
-    train_data = reader.read('https://s3-us-west-2.amazonaws.com/allennlp/datasets/sst/train.txt')
+    # train_data = reader.read('https://s3-us-west-2.amazonaws.com/allennlp/datasets/sst/train.txt') #origin source
+    train_data = reader.read('train.txt') #local
     reader = StanfordSentimentTreeBankDatasetReader(granularity="2-class",
                                                     token_indexers={"tokens": single_id_indexer})
-    dev_data = reader.read('https://s3-us-west-2.amazonaws.com/allennlp/datasets/sst/dev.txt')
+    # dev_data = reader.read('https://s3-us-west-2.amazonaws.com/allennlp/datasets/sst/dev.txt') #orgin
+    dev_data = reader.read('dev.txt') #local
     # test_dataset = reader.read('data/sst/test.txt')
 
     vocab = Vocabulary.from_instances(train_data)
@@ -70,7 +73,9 @@ def main():
 
     # Load word2vec vectors
     elif EMBEDDING_TYPE == "w2v":
-        embedding_path = "https://dl.fbaipublicfiles.com/fasttext/vectors-english/crawl-300d-2M.vec.zip"
+        # embedding_path = "https://dl.fbaipublicfiles.com/fasttext/vectors-english/crawl-300d-2M.vec.zip" #origin
+        embedding_path = "crawl-300d-2M.vec.zip" #local
+
         weight = _read_pretrained_embeddings_file(embedding_path,
                                                   embedding_dim=300,
                                                   vocab=vocab,
@@ -183,4 +188,9 @@ def main():
     utils.get_accuracy(model, targeted_dev_data, vocab, trigger_token_ids)
 
 if __name__ == '__main__':
+
+    path = "~/HKUST_COMP5222/data/universal-triggers"
+    os.chdir(path) #@ge
+    print("current file is : ", path)
+
     main()
